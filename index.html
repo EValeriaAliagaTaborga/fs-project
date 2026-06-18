@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="es">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Administrador de Tareas</title>
+	</head>
+	<style>
+		body {
+			font-family: Arial, sans-serif;
+			padding: 30px;
+			background-color: #f4f4f4;
+		}
+		h1 {
+			color: #333;
+			margin-bottom: 20px;
+		}
+		input {
+			width: 250px;
+			padding: 10px;
+			font-size: 16px;
+		}
+		button {
+			padding: 10px 15px;
+			font-size: 16px;
+			cursor: pointer;
+		}
+		ul {
+			padding: 0;
+			margin-top: 20px;
+		}
+		li {
+			list-style: none;
+			background-color: white;
+			padding: 10px;
+			margin-bottom: 8px;
+		}
+		.delete-btn {
+			padding: 6px 10px;
+            font-size: 14px;
+		}
+	</style>
+	<body>
+		<h1>Administrador de Tareas</h1>
+		<input type="text" id="taskInput" placeholder="Ingrese una tarea" />
+		<button id="addTaskBtn" onclick="addTask()">Agregar Tarea</button>
+		<ul id="taskList">
+		</ul>
+		<script>
+			const taskInput = document.getElementById("taskInput");
+			const addTaskBtn = document.getElementById("addTaskBtn");
+            const taskList = document.getElementById("taskList");
+
+			const addTask = () => {
+				const taskText = taskInput.value.trim();
+				if (taskText == "") {
+					return;
+				}
+				const li = document.createElement("li");
+				const taskSpan = document.createElement("span");
+				taskSpan.textContent = taskText;
+
+				const deleteBtn = document.createElement("button");
+				deleteBtn.textContent = "Eliminar";
+				deleteBtn.classList.add("delete-btn");
+				deleteBtn.addEventListener("click", () => {
+					li.remove();
+				});
+				li.appendChild(taskSpan);
+				li.appendChild(deleteBtn);
+				taskList.appendChild(li);
+				taskInput.value = "";
+				taskInput.focus();
+			};
+			addTaskBtn.addEventListener("click", addTask);
+			taskInput.addEventListener("keydown", (e) => {
+				if (e.key === "Enter") {
+					addTask();
+				}
+			});
+		</script>
+	</body>
+</html>
