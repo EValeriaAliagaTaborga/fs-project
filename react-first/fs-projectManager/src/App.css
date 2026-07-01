@@ -1,0 +1,195 @@
+.app {
+	margin: 0;
+	padding: 0;
+	width: 100%;
+}
+
+.header {
+	background-color: #ffffff;
+	padding: 20px;
+	color: #830745;
+	text-align: center;
+}
+
+.footer {
+	background-color: #ffaee0;
+	padding: 16px 20px;
+	color: #830745;
+	text-align: center;
+	bottom: 0;
+}
+.footer-stats {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 12px;
+	margin-bottom: 12px;
+}
+.footer-stat {
+	background: rgba(255, 255, 255, 0.5);
+	border-radius: 20px;
+	padding: 6px 16px;
+	font-size: 15px;
+	font-weight: 500;
+}
+.footer-stat span {
+	font-weight: 700;
+	margin-left: 4px;
+	color: #830745;
+}
+.footer-stat--completed span {
+	color: #1b8a4a;
+}
+.footer-stat--remaining span {
+	color: #830745;
+}
+.footer-credit {
+	border-top: 1px solid rgba(131, 7, 69, 0.25);
+	padding-top: 8px;
+	font-size: 14px;
+	opacity: 0.85;
+}
+.footer-credit p {
+	margin: 0;
+}
+
+.task-list {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+
+	.task-list-title {
+		font-size: 24px;
+		margin-bottom: 16px;
+		color: whitesmoke;
+	}
+}
+
+.empty-state {
+	text-align: center;
+	color: #b79ea9;
+	font-style: italic;
+	font-size: 15px;
+	padding: 24px;
+	margin-bottom: 16px;
+	border: 2px dashed #ffaee0;
+	border-radius: 12px;
+	background: rgba(255, 174, 224, 0.15);
+}
+
+.task-item {
+	background: #ffffff;
+	border: none;
+	border-left: 6px solid #830745;
+	color: #333;
+	border-radius: 12px;
+	padding: 16px;
+	margin-bottom: 16px;
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	gap: 12px;
+	box-shadow: 0 2px 6px rgba(131, 7, 69, 0.15);
+	transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+
+	.task-content {
+		flex: 3;
+	}
+}
+.task-item:hover {
+	transform: translateY(-2px);
+	box-shadow: 0 4px 12px rgba(131, 7, 69, 0.3);
+	border-left-color: rgb(226, 83, 143);
+}
+.task-list-container {
+	max-width: 600px;
+	margin: 0 auto;
+	padding: 20px;
+}
+.task-input-container {
+	max-width: 600px;
+	margin: 20px auto 0;
+	padding: 16px 20px;
+	background: whitesmoke;
+	border: 4px dotted rgb(226, 83, 143);
+	border-radius: 8px;
+	display: flex;
+	gap: 12px;
+	align-items: center;
+}
+.task-input {
+	flex: 1;
+	padding: 10px 14px;
+	border: 2px solid #ffaee0;
+	border-radius: 8px;
+	font-size: 16px;
+	color: #830745;
+	background: #ffffff;
+	outline: none;
+}
+.task-input:focus {
+	border-color: #830745;
+}
+.task-input::placeholder {
+	color: #b79ea9;
+}
+.add-task-btn {
+	background-color: #830745;
+	color: whitesmoke;
+	border: none;
+	border-radius: 8px;
+	padding: 10px 18px;
+	font-size: 16px;
+	cursor: pointer;
+	white-space: nowrap;
+}
+.add-task-btn:hover {
+	background-color: rgb(226, 83, 143);
+}
+.task-icon {
+	margin-right: 8px;
+	display: inline-block;
+}
+.task-checkbox {
+	width: 22px;
+	height: 22px;
+	margin-left: auto;
+	cursor: pointer;
+	vertical-align: middle;
+	/* accent-color tiñe el "check" nativo del navegador sin tener que recrear el control a mano.
+	   Usamos el mismo verde que ya marca "completado" en el Footer, para que ambas señales
+	   visuales signifiquen lo mismo en toda la app */
+	accent-color: #1b8a4a;
+}
+.delete-button {
+	background: transparent;
+	border: 2px solid #ff4d4d;
+	color: #ff4d4d;
+	cursor: pointer;
+	font-size: 14px;
+	font-weight: 700;
+	width: 26px;
+	height: 26px;
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	vertical-align: middle;
+	transition: background-color 0.15s ease, color 0.15s ease;
+}
+.delete-button:hover {
+	background-color: #ff4d4d;
+	color: #ffffff;
+}
+.edit-button {
+	background: transparent;
+	border: none;
+	color: #4d79ff;
+	cursor: pointer;
+	font-size: 16px;
+	margin-left: 8px;
+}
+.edit-button:hover {
+	color: #1a53ff;
+}

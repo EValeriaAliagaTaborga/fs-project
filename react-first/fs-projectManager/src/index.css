@@ -1,0 +1,46 @@
+:root {
+	--text: #b79ea9;
+	--text-h: #f3f4f6;
+	--bg: #830745;
+
+	font: 18px/145% "Elms Sans", Roboto, sans-serif;
+	letter-spacing: 0.18px;
+	color: var(--text);
+	background: var(--bg);
+}
+
+body {
+	margin: 0;
+	font-family:  "Elms Sans", Roboto, sans-serif;
+}
+
+#root {
+	max-width: 100%;
+	text-align: left;
+	line-height: 2.3em;
+	min-height: 100svh;
+	display: flex;
+	flex-direction: column;
+	box-sizing: border-box;
+}
+
+h1,
+h2 {
+	font-family:  "Elms Sans", Roboto, sans-serif;
+	font-weight: 500;
+}
+
+h1 {
+	font-size: 56px;
+	letter-spacing: -1.68px;
+	margin: 32px 0;
+}
+h2 {
+	font-size: 24px;
+	line-height: 118%;
+	letter-spacing: -0.24px;
+	margin: 0 0 8px;
+}
+p {
+	margin: 0;
+}
