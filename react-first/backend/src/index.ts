@@ -1,8 +1,27 @@
+require("dotenv").config();
+
 // Importa Express, el framework que convierte Node.js en un servidor HTTP con rutas y middlewares
 const express = require("express");
 
+// PRISMA CHANGE: Import Prisma Client
+const { PrismaClient } = require("@prisma/client");
+const { PrismaPg } = require("@prisma/adapter-pg");
+
+const jwt = require("jsonwebtoken");
+
 // Crea la instancia de la aplicación Express — es el objeto central que registra rutas y middlewares
 const app = express();
+
+const cors = require("cors");
+
+app.use(cors());
+app.use(express.json());
+
+// PRISMA CHANGE: Create the connection to PostgreSQL through Prisma
+const adapter = new PrismaPg({
+	connectionString: process.env.DATABASE_URL!,
+});
+export const prisma = new PrismaClient({ adapter });
 
 // Lee el puerto desde variables de entorno; si no existe, usa 3000 como fallback
 const PORT = process.env["PORT"] ?? 3000;
@@ -18,9 +37,9 @@ type Task = {
 // Base de datos en memoria: un arreglo de tareas que vive mientras el proceso esté corriendo.
 // Al reiniciar el servidor, se pierde todo — no hay persistencia real aquí.
 const tasks: Task[] = [
-    { id: 1, text: "Task 1", completed: false },
-    { id: 2, text: "Task 2", completed: false },
-    { id: 3, text: "Task 3", completed: false },
+	{ id: 1, text: "Task 1", completed: false },
+	{ id: 2, text: "Task 2", completed: false },
+	{ id: 3, text: "Task 3", completed: false },
 ];
 
 // Middleware global: le dice a Express que parsee el body de las requests como JSON automáticamente.
@@ -32,82 +51,206 @@ app.get("/", (req: any, res: any) => {
 	res.send("Backend is working");
 });
 
+// JWT: This is a basic login route.
+// JWT: For now, we are using fixed credentials only for practice.
+app.post("/login", (req: any, res: any) => {
+	const { email, password } = req.body || {};
+	if (email === "admin@test.com" && password === "123456") {
+		// JWT: If the credentials are correct, we create a token.
+		const token = jwt.sign(
+			// JWT: This is the information stored inside the token.
+			{ email: email },
+			// JWT: This secret is used to sign the token.
+			"secret_key",
+			// JWT: The token will expire in 1 hour.
+			{ expiresIn: "1h" },
+		);
+		return res.json({
+			message: "Login successful",
+			token: token,
+		});
+	}
+	res.status(401).json({
+		message: "Invalid credentials",
+	});
+});
+
+// NEW JWT CHANGE: This is a protected route.
+// NEW JWT CHANGE: The user must send a valid token to access this route.
+app.get("/profile", (req: any, res: any) => {
+	// NEW JWT CHANGE: The token is expected in the Authorization header.
+	const authHeader = req.headers.authorization;
+	if (!authHeader) {
+		return res.status(401).json({
+			message: "No token provided",
+		});
+	}
+	// NEW JWT CHANGE: The header usually looks like "Bearer token_here".
+	// NEW JWT CHANGE: We split it and take only the token part.
+	const token = authHeader.split(" ")[1];
+	try {
+		// NEW JWT CHANGE: jwt.verify checks if the token is valid.
+		const decoded = jwt.verify(token, "secret_key");
+		res.json({
+			message: "Protected profile data",
+			user: decoded,
+		});
+	} catch (error) {
+		res.status(401).json({
+			message: "Invalid token",
+		});
+	}
+});
+
+/*
 // GET /tasks — devuelve todas las tareas en formato JSON
 app.get("/tasks", (req: any, res: any) => {
-    res.json(tasks);
+	res.json(tasks);
 });
 
 // DELETE /tasks/:id — elimina la tarea con el id indicado en la URL
 app.delete("/tasks/:id", (req: any, res: any) => {
-    // req.params.id llega como string desde la URL, lo convertimos a número para comparar
-    const taskId = Number(req.params.id);
+	// req.params.id llega como string desde la URL, lo convertimos a número para comparar
+	const taskId = Number(req.params.id);
 
-    // Busca el índice de la tarea en el arreglo (-1 si no existe)
-    const taskIndex = tasks.findIndex((task) => task.id === taskId);
+	// Busca el índice de la tarea en el arreglo (-1 si no existe)
+	const taskIndex = tasks.findIndex((task) => task.id === taskId);
 
-    if (taskIndex !== -1) {
-        // splice muta el arreglo original: elimina 1 elemento en la posición encontrada
-        tasks.splice(taskIndex, 1);
-        res.status(200).json({ message: "Task deleted successfully" });
-    } else {
-        // Si el id no existe, responde 404 para que el cliente sepa que no encontró el recurso
-        res.status(404).json({ message: "Task not found" });
-    }
+	if (taskIndex !== -1) {
+		// splice muta el arreglo original: elimina 1 elemento en la posición encontrada
+		tasks.splice(taskIndex, 1);
+		res.status(200).json({ message: "Task deleted successfully", tasks: tasks });
+	} else {
+		// Si el id no existe, responde 404 para que el cliente sepa que no encontró el recurso
+		res.status(404).json({ message: "Task not found" });
+	}
 });
 
 // POST /tasks — crea una nueva tarea con el texto recibido en el body JSON
 app.post("/tasks", (req: any, res: any) => {
-    // Desestructura solo el campo "text" del body; los campos extra se ignoran
-    const { text } = req.body;
+	// Desestructura solo el campo "text" del body; los campos extra se ignoran
+	const { text } = req.body;
 
-    // Validación de entrada: si no viene "text", rechazamos con 400 (Bad Request).
-    // return corta la función aquí — sin él, el código seguiría ejecutando y crearía una tarea vacía
-    if (!text) {
-        return res.status(400).json({ message: "Task text is required" });
-    }
+	// Validación de entrada: si no viene "text", rechazamos con 400 (Bad Request).
+	// return corta la función aquí — sin él, el código seguiría ejecutando y crearía una tarea vacía
+	if (!text) {
+		return res.status(400).json({ message: "Task text is required" });
+	}
 
-    const newTask: Task = {
-        // Date.now() devuelve los milisegundos desde epoch — suficiente como id único en memoria,
-        // pero en una DB real usarías un autoincrement o UUID
-        id: Date.now(),
-        text,           // shorthand de ES6: equivale a text: text
-        completed: false
-    };
+	const newTask: Task = {
+		// Date.now() devuelve los milisegundos desde epoch — suficiente como id único en memoria,
+		// pero en una DB real usarías un autoincrement o UUID
+		id: Date.now(),
+		text, // shorthand de ES6: equivale a text: text
+		completed: false,
+	};
 
-    // Agrega la nueva tarea al arreglo en memoria
-    tasks.push(newTask);
+	// Agrega la nueva tarea al arreglo en memoria
+	tasks.push(newTask);
 
-    // 201 Created es el status correcto cuando se crea un recurso nuevo (no 200)
-    res.status(201).json(newTask);
+	// 201 Created es el status correcto cuando se crea un recurso nuevo (no 200)
+	res.status(201).json(newTask);
 });
 
 // PUT /tasks/:id — actualiza parcialmente una tarea existente (solo los campos que vengan en el body)
 app.put("/tasks/:id", (req: any, res: any) => {
-    const taskId = Number(req.params.id);
+	const taskId = Number(req.params.id);
 
-    // Desestructura ambos campos editables; cualquiera puede venir como undefined si no se envió
-    const { text, completed } = req.body;
+	// Desestructura ambos campos editables; cualquiera puede venir como undefined si no se envió
+	const { text, completed } = req.body;
 
-    // find devuelve la referencia al objeto dentro del arreglo, no una copia
-    // Mutarlo directamente modifica el arreglo original — eso es lo que queremos aquí
-    const task = tasks.find((task) => task.id === taskId);
+	// find devuelve la referencia al objeto dentro del arreglo, no una copia
+	// Mutarlo directamente modifica el arreglo original — eso es lo que queremos aquí
+	const task = tasks.find((task) => task.id === taskId);
 
-    // Guard temprano: si no existe la tarea, salimos con 404 antes de intentar modificar nada
-    if (!task) {
-        return res.status(404).json({ message: "Task not found" });
-    }
+	// Guard temprano: si no existe la tarea, salimos con 404 antes de intentar modificar nada
+	if (!task) {
+		return res.status(404).json({ message: "Task not found" });
+	}
 
-    // Solo actualiza el campo si el cliente lo envió — esto permite actualizaciones parciales
-    // (ej: enviar solo { completed: true } sin tocar el texto)
-    if (text !== undefined) {
-        task.text = text;
-    }
-    if (completed !== undefined) {
-        task.completed = completed;
-    }
+	// Solo actualiza el campo si el cliente lo envió — esto permite actualizaciones parciales
+	// (ej: enviar solo { completed: true } sin tocar el texto)
+	if (text !== undefined) {
+		task.text = text;
+	}
+	if (completed !== undefined) {
+		task.completed = completed;
+	}
 
-    // Devuelve la tarea ya modificada para que el cliente tenga el estado actualizado
-    res.status(200).json(task);
+	// Devuelve la tarea ya modificada para que el cliente tenga el estado actualizado
+	res.status(200).json(task);
+});
+*/
+
+// PRISMA CHANGE: GET /tasks now reads from PostgreSQL instead of the array
+app.get("/tasks", async (req: any, res: any) => {
+	const tasksFromDatabase = await prisma.task.findMany();
+	res.json(tasksFromDatabase);
+});
+
+// NEW CHANGE: POST /tasks now saves the new task in PostgreSQL using Prisma.
+app.post("/tasks", async (req: any, res: any) => {
+	const { text } = req.body || {};
+	if (!text || text.trim() === "") {
+		return res.status(400).json({
+			message: "Task text is required",
+		});
+	}
+	const newTask = await prisma.task.create({
+		data: {
+			text: text,
+			completed: false,
+		},
+	});
+	res.status(201).json(newTask);
+});
+
+// PRISMA CHANGE: DELETE /tasks/:id now removes the row from PostgreSQL using Prisma.
+app.delete("/tasks/:id", async (req: any, res: any) => {
+	const taskId = Number(req.params.id);
+
+	try {
+		// delete lanza una excepción (P2025) si no encuentra ninguna fila con ese id,
+		// en vez de devolver null como findMany/findUnique
+		await prisma.task.delete({
+			where: { id: taskId },
+		});
+		res.status(200).json({ message: "Task deleted successfully" });
+	} catch (error: any) {
+		if (error.code === "P2025") {
+			return res.status(404).json({ message: "Task not found" });
+		}
+		throw error;
+	}
+});
+
+// PRISMA CHANGE: PUT /tasks/:id now updates the row in PostgreSQL using Prisma.
+app.put("/tasks/:id", async (req: any, res: any) => {
+	const taskId = Number(req.params.id);
+	const { text, completed } = req.body || {};
+
+	// Arma el objeto de cambios solo con los campos que vinieron en el body,
+	// para que sea una actualización parcial (igual que la versión en memoria)
+	const data: { text?: string; completed?: boolean } = {};
+	if (text !== undefined) {
+		data.text = text;
+	}
+	if (completed !== undefined) {
+		data.completed = completed;
+	}
+
+	try {
+		const updatedTask = await prisma.task.update({
+			where: { id: taskId },
+			data,
+		});
+		res.status(200).json(updatedTask);
+	} catch (error: any) {
+		if (error.code === "P2025") {
+			return res.status(404).json({ message: "Task not found" });
+		}
+		throw error;
+	}
 });
 
 // Arranca el servidor y empieza a escuchar conexiones en el puerto definido
