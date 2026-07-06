@@ -4,10 +4,11 @@ require("dotenv").config();
 const express = require("express");
 
 // PRISMA CHANGE: Import Prisma Client
-const { PrismaClient } = require("@prisma/client");
+const { PrismaClient } = require("./generated/prisma/client");
 const { PrismaPg } = require("@prisma/adapter-pg");
 
 const jwt = require("jsonwebtoken");
+const bcrypt = require("bcryptjs");
 
 // Crea la instancia de la aplicación Express — es el objeto central que registra rutas y middlewares
 const app = express();
@@ -51,27 +52,73 @@ app.get("/", (req: any, res: any) => {
 	res.send("Backend is working");
 });
 
-// JWT: This is a basic login route.
-// JWT: For now, we are using fixed credentials only for practice.
-app.post("/login", (req: any, res: any) => {
-	const { email, password } = req.body || {};
-	if (email === "admin@test.com" && password === "123456") {
-		// JWT: If the credentials are correct, we create a token.
-		const token = jwt.sign(
-			// JWT: This is the information stored inside the token.
-			{ email: email },
-			// JWT: This secret is used to sign the token.
-			"secret_key",
-			// JWT: The token will expire in 1 hour.
-			{ expiresIn: "1h" },
-		);
-		return res.json({
-			message: "Login successful",
-			token: token,
+// AUTH: Register creates a real user in PostgreSQL.
+// AUTH: The password is hashed before saving it.
+app.post("/register", async (req: any, res: any) => {
+	const { name, email, password } = req.body || {};
+	if (!name || !email || !password) {
+		return res.status(400).json({
+			message: "Name, email and password are required",
 		});
 	}
-	res.status(401).json({
-		message: "Invalid credentials",
+	const existingUser = await prisma.user.findUnique({
+		where: { email: email },
+	});
+	if (existingUser) {
+		return res.status(400).json({
+			message: "User already exists",
+		});
+	}
+	const hashedPassword = await bcrypt.hash(password, 10);
+	const newUser = await prisma.user.create({
+		data: {
+			name: name,
+			email: email,
+			password: hashedPassword,
+		},
+	});
+	res.status(201).json({
+		message: "User registered successfully",
+		user: {
+			id: newUser.id,
+			name: newUser.name,
+			email: newUser.email,
+		},
+	});
+});
+
+// AUTH: Login now checks real users from PostgreSQL.
+// AUTH: bcrypt.compare checks the typed password against the saved hash.
+app.post("/login", async (req: any, res: any) => {
+	const { email, password } = req.body || {};
+	if (!email || !password) {
+		return res.status(400).json({
+			message: "Email and password are required",
+		});
+	}
+	const user = await prisma.user.findUnique({
+		where: { email: email },
+	});
+	if (!user) {
+		return res.status(401).json({
+			message: "Invalid credentials",
+		});
+	}
+	const passwordIsValid = await bcrypt.compare(password, user.password);
+	if (!passwordIsValid) {
+		return res.status(401).json({
+			message: "Invalid credentials",
+		});
+	}
+	const token = jwt.sign({ id: user.id, email: user.email }, "secret_key", { expiresIn: "1h" });
+	res.json({
+		message: "Login successful",
+		token: token,
+		user: {
+			id: user.id,
+			name: user.name,
+			email: user.email,
+		},
 	});
 });
 
