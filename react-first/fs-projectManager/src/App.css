@@ -147,6 +147,113 @@
 .add-task-btn:hover {
 	background-color: rgb(226, 83, 143);
 }
+.auth-container {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	min-height: 100vh;
+	background: #ffaee0;
+	padding: 20px;
+}
+.auth-form {
+	background: #ffffff;
+	border-radius: 12px;
+	padding: 32px;
+	max-width: 380px;
+	width: 100%;
+	box-shadow: 0 4px 12px rgba(131, 7, 69, 0.2);
+	display: flex;
+	flex-direction: column;
+	gap: 14px;
+}
+.auth-form h2 {
+	color: #830745;
+	text-align: center;
+	margin: 0 0 8px;
+}
+.auth-form label {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	font-size: 14px;
+	color: #830745;
+	font-weight: 500;
+}
+.auth-form input {
+	padding: 10px 14px;
+	border: 2px solid #ffaee0;
+	border-radius: 8px;
+	font-size: 15px;
+	outline: none;
+}
+.auth-form input:focus {
+	border-color: #830745;
+}
+.auth-btn {
+	background-color: #830745;
+	color: whitesmoke;
+	border: none;
+	border-radius: 8px;
+	padding: 10px 18px;
+	font-size: 16px;
+	cursor: pointer;
+	margin-top: 4px;
+}
+.auth-btn:hover {
+	background-color: rgb(226, 83, 143);
+}
+.auth-message {
+	text-align: center;
+	font-size: 14px;
+	margin: 0;
+	padding: 8px;
+	border-radius: 8px;
+}
+.auth-message--success {
+	background: rgba(27, 138, 74, 0.15);
+	color: #1b8a4a;
+}
+.auth-message--error {
+	background: rgba(255, 77, 77, 0.15);
+	color: #ff4d4d;
+}
+.auth-switch {
+	text-align: center;
+	font-size: 14px;
+	color: #830745;
+	margin: 0;
+}
+.auth-switch a {
+	color: #830745;
+	font-weight: 700;
+}
+.auth-loading {
+	text-align: center;
+	padding: 40px;
+	color: #830745;
+	font-size: 16px;
+}
+.logout-bar {
+	display: flex;
+	justify-content: flex-end;
+	max-width: 600px;
+	margin: 12px auto 0;
+	padding: 0 20px;
+}
+.logout-btn {
+	background: transparent;
+	border: 2px solid #ffaee0;
+	color: whitesmoke;
+	border-radius: 8px;
+	padding: 6px 14px;
+	cursor: pointer;
+	font-size: 14px;
+}
+.logout-btn:hover {
+	background: #ffaee0;
+	color: #830745;
+}
+
 .task-icon {
 	margin-right: 8px;
 	display: inline-block;
