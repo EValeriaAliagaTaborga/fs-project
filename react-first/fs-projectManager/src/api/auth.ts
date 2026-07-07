@@ -68,3 +68,11 @@ export async function isTokenValid(token: string): Promise<boolean> {
 	});
 	return response.ok;
 }
+
+// Arma el header Authorization a partir del token guardado por Login.tsx.
+// Todas las rutas de /tasks ahora pasan por el middleware verifyToken del backend,
+// así que cualquier fetch a esas rutas necesita este header para no recibir 401.
+export function authHeader(): Record<string, string> {
+	const token = localStorage.getItem(TOKEN_KEY);
+	return token ? { Authorization: `Bearer ${token}` } : {};
+}

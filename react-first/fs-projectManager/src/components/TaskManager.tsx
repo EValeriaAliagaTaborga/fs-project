@@ -4,7 +4,7 @@ import Footer from "./Footer";
 import TaskInput from "./TaskInput";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { TOKEN_KEY } from "../api/auth";
+import { authHeader, TOKEN_KEY } from "../api/auth";
 
 // Forma de cada tarea en la lista: el "contrato" de datos que comparten todos los componentes
 type Task = {
@@ -22,7 +22,9 @@ function TaskManager() {
 	// Carga las tareas desde el backend cuando el componente se monta
 	useEffect(() => {
 		const fetchTasks = async () => {
-			const response = await fetch("http://localhost:3000/tasks");
+			const response = await fetch("http://localhost:3000/tasks", {
+				headers: { ...authHeader() },
+			});
 			const data = await response.json();
 			setTasks(data);
 		};
@@ -35,6 +37,7 @@ function TaskManager() {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",
+				...authHeader(),
 			},
 			body: JSON.stringify({
 				text: text,
@@ -48,6 +51,7 @@ function TaskManager() {
 	const deleteTask = async (id: number) => {
 		await fetch(`http://localhost:3000/tasks/${id}`, {
 			method: "DELETE",
+			headers: { ...authHeader() },
 		});
 		const updatedTasks = tasks.filter((task) => task.id !== id);
 		setTasks(updatedTasks);
@@ -59,6 +63,7 @@ function TaskManager() {
 			method: "PUT",
 			headers: {
 				"Content-Type": "application/json",
+				...authHeader(),
 			},
 			body: JSON.stringify({ completed }),
 		});

@@ -122,31 +122,36 @@ app.post("/login", async (req: any, res: any) => {
 	});
 });
 
-// NEW JWT CHANGE: This is a protected route.
-// NEW JWT CHANGE: The user must send a valid token to access this route.
-app.get("/profile", (req: any, res: any) => {
-	// NEW JWT CHANGE: The token is expected in the Authorization header.
+// AUTH MIDDLEWARE: Verifies the JWT sent in the Authorization header before letting
+// a request reach a protected route. Reused by /profile and by every /tasks route
+// so the whole Task Manager API requires a valid session, not just /profile.
+function verifyToken(req: any, res: any, next: any) {
 	const authHeader = req.headers.authorization;
 	if (!authHeader) {
 		return res.status(401).json({
 			message: "No token provided",
 		});
 	}
-	// NEW JWT CHANGE: The header usually looks like "Bearer token_here".
-	// NEW JWT CHANGE: We split it and take only the token part.
+	// The header usually looks like "Bearer token_here"; we split it and take only the token part.
 	const token = authHeader.split(" ")[1];
 	try {
-		// NEW JWT CHANGE: jwt.verify checks if the token is valid.
 		const decoded = jwt.verify(token, "secret_key");
-		res.json({
-			message: "Protected profile data",
-			user: decoded,
-		});
+		req.user = decoded;
+		next();
 	} catch (error) {
 		res.status(401).json({
 			message: "Invalid token",
 		});
 	}
+}
+
+// NEW JWT CHANGE: This is a protected route.
+// NEW JWT CHANGE: The user must send a valid token to access this route.
+app.get("/profile", verifyToken, (req: any, res: any) => {
+	res.json({
+		message: "Protected profile data",
+		user: req.user,
+	});
 });
 
 /*
@@ -230,13 +235,15 @@ app.put("/tasks/:id", (req: any, res: any) => {
 */
 
 // PRISMA CHANGE: GET /tasks now reads from PostgreSQL instead of the array
-app.get("/tasks", async (req: any, res: any) => {
+// AUTH: protected with verifyToken so only a logged-in user can list tasks.
+app.get("/tasks", verifyToken, async (req: any, res: any) => {
 	const tasksFromDatabase = await prisma.task.findMany();
 	res.json(tasksFromDatabase);
 });
 
 // NEW CHANGE: POST /tasks now saves the new task in PostgreSQL using Prisma.
-app.post("/tasks", async (req: any, res: any) => {
+// AUTH: protected with verifyToken so only a logged-in user can create tasks.
+app.post("/tasks", verifyToken, async (req: any, res: any) => {
 	const { text } = req.body || {};
 	if (!text || text.trim() === "") {
 		return res.status(400).json({
@@ -253,7 +260,8 @@ app.post("/tasks", async (req: any, res: any) => {
 });
 
 // PRISMA CHANGE: DELETE /tasks/:id now removes the row from PostgreSQL using Prisma.
-app.delete("/tasks/:id", async (req: any, res: any) => {
+// AUTH: protected with verifyToken so only a logged-in user can delete tasks.
+app.delete("/tasks/:id", verifyToken, async (req: any, res: any) => {
 	const taskId = Number(req.params.id);
 
 	try {
@@ -272,7 +280,8 @@ app.delete("/tasks/:id", async (req: any, res: any) => {
 });
 
 // PRISMA CHANGE: PUT /tasks/:id now updates the row in PostgreSQL using Prisma.
-app.put("/tasks/:id", async (req: any, res: any) => {
+// AUTH: protected with verifyToken so only a logged-in user can update tasks.
+app.put("/tasks/:id", verifyToken, async (req: any, res: any) => {
 	const taskId = Number(req.params.id);
 	const { text, completed } = req.body || {};
 
