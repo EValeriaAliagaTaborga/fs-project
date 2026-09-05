@@ -27,6 +27,15 @@ export const prisma = new PrismaClient({ adapter });
 // Lee el puerto desde variables de entorno; si no existe, usa 3000 como fallback
 const PORT = process.env["PORT"] ?? 3000;
 
+// Clave con la que se firman y verifican los JWT. Se lee del archivo .env (ver .env.example)
+// para que el secreto no viva en el código fuente ni se suba al repositorio.
+const JWT_SECRET = process.env["JWT_SECRET"];
+if (!JWT_SECRET) {
+	// Fallar acá al arrancar es preferible a firmar tokens con un valor por defecto:
+	// un secreto conocido permitiría a cualquiera falsificar sesiones válidas.
+	throw new Error("Falta la variable de entorno JWT_SECRET. Copia .env.example a .env y complétala.");
+}
+
 // Define la forma que debe tener cada tarea en TypeScript.
 // TypeScript usa este tipo en tiempo de compilación para detectar errores; no existe en runtime.
 type Task = {
@@ -110,7 +119,7 @@ app.post("/login", async (req: any, res: any) => {
 			message: "Invalid credentials",
 		});
 	}
-	const token = jwt.sign({ id: user.id, email: user.email }, "secret_key", { expiresIn: "1h" });
+	const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: "1h" });
 	res.json({
 		message: "Login successful",
 		token: token,
@@ -135,7 +144,7 @@ function verifyToken(req: any, res: any, next: any) {
 	// The header usually looks like "Bearer token_here"; we split it and take only the token part.
 	const token = authHeader.split(" ")[1];
 	try {
-		const decoded = jwt.verify(token, "secret_key");
+		const decoded = jwt.verify(token, JWT_SECRET);
 		req.user = decoded;
 		next();
 	} catch (error) {
