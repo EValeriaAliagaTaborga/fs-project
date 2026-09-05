@@ -1,5 +1,8 @@
-// URL base del backend Express (ver backend/src/index.ts)
-const API_URL = "http://localhost:3000";
+// URL base del backend Express (ver backend/src/index.ts).
+// Se lee de VITE_API_URL para poder apuntar a otro host al desplegar; si la variable no está
+// definida se usa localhost:3000, que es el puerto por defecto del backend en desarrollo.
+// Vite solo expone al navegador las variables que empiezan con VITE_ (ver .env.example).
+export const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3000";
 
 // Clave usada para guardar el token JWT en localStorage.
 // Se centraliza acá para que Login, ProtectedRoute y TaskManager usen siempre la misma clave.
@@ -59,7 +62,7 @@ export function translateMessage(message: string): string {
 }
 
 // Verifica si un token sigue siendo válido llamando a la ruta protegida GET /profile.
-// El backend hace jwt.verify(token, "secret_key"): si el token es válido y no expiró,
+// El backend hace jwt.verify(token, JWT_SECRET) con el secreto leído de su .env: si el token es válido y no expiró,
 // responde 200; si no, responde 401. ProtectedRoute usa esto para decidir si deja pasar
 // al Task Manager o redirige a /login.
 export async function isTokenValid(token: string): Promise<boolean> {

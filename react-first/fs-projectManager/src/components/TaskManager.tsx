@@ -4,7 +4,7 @@ import Footer from "./Footer";
 import TaskInput from "./TaskInput";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { authHeader, TOKEN_KEY } from "../api/auth";
+import { API_URL, authHeader, TOKEN_KEY } from "../api/auth";
 
 // Forma de cada tarea en la lista: el "contrato" de datos que comparten todos los componentes
 type Task = {
@@ -22,7 +22,7 @@ function TaskManager() {
 	// Carga las tareas desde el backend cuando el componente se monta
 	useEffect(() => {
 		const fetchTasks = async () => {
-			const response = await fetch("http://localhost:3000/tasks", {
+			const response = await fetch(`${API_URL}/tasks`, {
 				headers: { ...authHeader() },
 			});
 			const data = await response.json();
@@ -33,7 +33,7 @@ function TaskManager() {
 
 	// Crea una tarea nueva enviándola al backend usando POST
 	const addTask = async (text: string) => {
-		const response = await fetch("http://localhost:3000/tasks", {
+		const response = await fetch(`${API_URL}/tasks`, {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",
@@ -49,7 +49,7 @@ function TaskManager() {
 
 	// Elimina la tarea en el backend usando DELETE
 	const deleteTask = async (id: number) => {
-		await fetch(`http://localhost:3000/tasks/${id}`, {
+		await fetch(`${API_URL}/tasks/${id}`, {
 			method: "DELETE",
 			headers: { ...authHeader() },
 		});
@@ -59,7 +59,7 @@ function TaskManager() {
 
 	// Actualiza el estado "completed" de una tarea en el backend usando PUT
 	const statusUpdateTask = async (id: number, completed: boolean) => {
-		const response = await fetch(`http://localhost:3000/tasks/${id}`, {
+		const response = await fetch(`${API_URL}/tasks/${id}`, {
 			method: "PUT",
 			headers: {
 				"Content-Type": "application/json",
