@@ -15,3 +15,6 @@ build/
 .idea/
 .DS_Store
 *.log
+
+# Cliente de Prisma generado (se regenera con npm run build o npm run db:migrate)
+/src/generated/
