@@ -19,7 +19,7 @@ jobs:
         with:
           node-version: '22'
           cache: 'npm'
-          cache-dependency-path: react-first/fs-projectManager/package-lock-roto.json
+          cache-dependency-path: react-first/fs-projectManager/package-lock.json
       - run: npm ci
       - run: npm run lint
       - run: npm run build
