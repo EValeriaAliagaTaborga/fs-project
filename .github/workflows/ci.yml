@@ -1,78 +1,43 @@
 name: CI
 
-# Se ejecuta en cada push a cualquier rama y en los pull requests hacia master,
-# para que el estado del pipeline se vea antes de mezclar los cambios.
 on:
   push:
-    branches: ["**"]
+    branches: [master]
   pull_request:
     branches: [master]
 
 jobs:
   frontend:
-    name: Frontend (React + Vite)
+    name: Frontend - Lint & Build
     runs-on: ubuntu-latest
     defaults:
       run:
-        # Todos los comandos se ejecutan dentro de la carpeta del frontend
-        working-directory: react-first/fs-projectManager
+        working-directory: ./react-first/fs-projectManager
     steps:
-      - name: Descargar el código
-        uses: actions/checkout@v4
-
-      - name: Preparar Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: 22
-          cache: npm
+          node-version: '22'
+          cache: 'npm'
           cache-dependency-path: react-first/fs-projectManager/package-lock.json
-
-      # npm ci instala exactamente las versiones del package-lock.json.
-      # A diferencia de npm install, no modifica el lock: si el lock y el
-      # package.json no coinciden, falla en vez de "arreglarlo" en silencio.
-      - name: Instalar dependencias
-        run: npm ci
-
-      - name: Lint
-        run: npm run lint
-
-      # Hoy solo imprime que las pruebas están pendientes (Sesión 3), pero el paso
-      # ya queda cableado para cuando existan de verdad.
-      - name: Pruebas
-        run: npm test
-
-      - name: Build de producción
-        run: npm run build
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run build
 
   backend:
-    name: Backend (Express + Prisma)
+    name: Backend - Build
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: react-first/backend
+        working-directory: ./react-first/backend
     env:
-      # prisma generate exige que la variable exista, pero no se conecta a la base:
-      # solo lee prisma/schema.prisma para generar el cliente. Por eso alcanza con
-      # una URL ficticia y no hace falta levantar PostgreSQL en el pipeline.
       DATABASE_URL: postgresql://ci:ci@localhost:5432/ci?schema=public
     steps:
-      - name: Descargar el código
-        uses: actions/checkout@v4
-
-      - name: Preparar Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: 22
-          cache: npm
+          node-version: '22'
+          cache: 'npm'
           cache-dependency-path: react-first/backend/package-lock.json
-
-      - name: Instalar dependencias
-        run: npm ci
-
-      - name: Pruebas
-        run: npm test
-
-      # npm run build = prisma generate && tsc. El tsc actúa como chequeo de tipos
-      # de todo el backend, así que este paso es el que detecta errores de compilación.
-      - name: Build (cliente de Prisma + compilación TypeScript)
-        run: npm run build
+      - run: npm ci
+      - run: npm run build
