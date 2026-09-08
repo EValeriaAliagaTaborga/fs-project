@@ -3,8 +3,7 @@
 Aplicación web para gestionar una lista de tareas personales: cada persona se registra con nombre, email y contraseña, inicia sesión, y a partir de ahí puede crear, marcar como completadas, editar y eliminar sus tareas. El proyecto es full-stack — un frontend en React + Vite (TypeScript) y una API REST en Express que protege sus rutas con JWT y guarda usuarios y tareas en PostgreSQL mediante Prisma.
 
 <!-- BADGE_CI -->
-[![CI](https://github.com/EValeriaAliagaTaborga/fs-project/actions/workflows/ci.yml/badge.svg)](https://github.com/EValeriaAliagaTaborga/fs-project/actions/workflows/ci.yml)
-
+[![CI](https://github.com/EValeriaAliagaTaborga/fs-project/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/EValeriaAliagaTaborga/fs-project/actions/workflows/ci.yml)
 ## 🚀 Instalación local
 
 El repositorio contiene dos aplicaciones: el frontend en `react-first/fs-projectManager` y la API en `react-first/backend`. Hay que instalar ambas.
