@@ -3,7 +3,7 @@ import Login from "./components/Login";
 import Register from "./components/Register";
 import TaskManager from "./components/TaskManager";
 import ProtectedRoute from "./components/ProtectedRoute";
-import "./Approto.css";
+import "./App.css";
 
 // App ya no arma la pantalla directamente: ahora solo define qué componente se muestra
 // según la URL. BrowserRouter habilita el ruteo, Routes/Route mapean cada path a un componente.
