@@ -3,7 +3,7 @@
 API REST que da soporte a FS Project Manager, una aplicación de gestión de tareas personales. Este servicio se encarga de registrar usuarios, autenticarlos con tokens JWT y guardar sus tareas en PostgreSQL; la interfaz web que lo consume vive en la carpeta vecina `fs-projectManager`. Está construido con Node.js, Express y TypeScript, y accede a la base de datos mediante Prisma.
 
 <!-- BADGE_CI -->
-[![CI](https://github.com/EValeriaAliagaTaborga/fs-project/actions/workflows/ci.yml/badge.svg)](https://github.com/EValeriaAliagaTaborga/fs-project/actions/workflows/ci.yml)
+[![CI](https://github.com/EValeriaAliagaTaborga/fs-project/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/EValeriaAliagaTaborga/fs-project/actions/workflows/ci.yml)
 
 ## 🚀 Instalación local
 
