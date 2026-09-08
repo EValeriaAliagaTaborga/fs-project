@@ -12,6 +12,7 @@ El repositorio contiene dos aplicaciones que se ejecutan por separado:
 La API protege sus rutas con tokens JWT y guarda usuarios y tareas en PostgreSQL mediante Prisma; el frontend la consume desde el navegador.
 
 <!-- BADGE_CI -->
+[![CI](https://github.com/EValeriaAliagaTaborga/fs-project/actions/workflows/ci.yml/badge.svg)](https://github.com/EValeriaAliagaTaborga/fs-project/actions/workflows/ci.yml)
 
 ## 📁 Estructura del repositorio
 
