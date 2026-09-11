@@ -1,0 +1,29 @@
+{
+	// El proyecto usa TypeScript (.ts/.tsx) pero no tenía este archivo. Vite igual compilaba,
+	// porque solo transpila y no verifica tipos, pero el editor quedaba adivinando la
+	// configuración. Con este tsconfig, VS Code arma un único proyecto con todo lo que hay
+	// en src/, que es lo que permite que la ampliación de tipos importada en src/test/setup.ts
+	// (los matchers de jest-dom) esté disponible dentro de los archivos .test.tsx.
+	"compilerOptions": {
+		// Entorno: código moderno pensado para el navegador
+		"target": "ES2022",
+		"lib": ["ES2022", "DOM", "DOM.Iterable"],
+		"module": "ESNext",
+		"moduleResolution": "bundler",
+
+		// React 19 con la transformación automática de JSX: no hace falta importar React
+		// en cada archivo, tal como ya lo hacen los componentes de este proyecto
+		"jsx": "react-jsx",
+
+		// Vite se encarga de generar los archivos finales; TypeScript acá solo revisa tipos
+		"noEmit": true,
+		"isolatedModules": true,
+		"esModuleInterop": true,
+		"resolveJsonModule": true,
+		"skipLibCheck": true,
+
+		// Chequeo estricto: obliga a contemplar los null/undefined y los tipos implícitos
+		"strict": true
+	},
+	"include": ["src", "vite.config.js"]
+}

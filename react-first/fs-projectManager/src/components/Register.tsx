@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { registerRequest, translateMessage } from "../api/auth";
+import { esCorreoValido, esPasswordValida, LARGO_MINIMO_PASSWORD } from "../utils/validaciones";
 
 // "feedback" es el mensaje que se muestra bajo el formulario: verde si success, rojo si error
 type Feedback = {
@@ -23,6 +24,22 @@ function Register() {
 		// Evita que el navegador recargue la página al enviar el <form> (comportamiento HTML por defecto)
 		event.preventDefault();
 		setFeedback(null); // limpia cualquier mensaje de un intento anterior
+
+		// Validación en el cliente antes de gastar una petición al backend. Son funciones puras
+		// (utils/validaciones.ts), probadas en validaciones.test.ts. El backend igual vuelve a
+		// validar por su cuenta: esto es solo para darle feedback inmediato al usuario.
+		if (!esCorreoValido(email)) {
+			setFeedback({ type: "error", text: "El correo no tiene un formato válido" });
+			return;
+		}
+
+		if (!esPasswordValida(password)) {
+			setFeedback({
+				type: "error",
+				text: `La contraseña debe tener al menos ${LARGO_MINIMO_PASSWORD} caracteres`,
+			});
+			return;
+		}
 
 		try {
 			// 1. Le pide al backend que cree el usuario (ver POST /register en backend/src/index.ts).

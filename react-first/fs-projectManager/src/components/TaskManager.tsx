@@ -5,6 +5,7 @@ import TaskInput from "./TaskInput";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { API_URL, authHeader, TOKEN_KEY } from "../api/auth";
+import { calcularEstadisticas } from "../utils/tareas";
 
 // Forma de cada tarea en la lista: el "contrato" de datos que comparten todos los componentes
 type Task = {
@@ -81,6 +82,11 @@ function TaskManager() {
 		navigate("/login");
 	};
 
+	// Las cuentas del Footer se delegan a una función pura (utils/tareas.ts) en vez de
+	// resolverse con .filter dentro del JSX: así la lógica se puede probar sola con Vitest
+	// y este componente se queda solo con el estado y las llamadas al backend.
+	const estadisticas = calcularEstadisticas(tasks);
+
 	return (
 		<div className="app">
 			<Header />
@@ -95,12 +101,11 @@ function TaskManager() {
 			    junto con las funciones para borrar y actualizar el estado de cada tarea */}
 			<TaskList tasks={tasks} onDeleteTask={deleteTask} onStatusUpdateTask={statusUpdateTask} />
 			{/* Footer no calcula nada por su cuenta: TaskManager es la única fuente de verdad de "tasks",
-			    así que las cuentas (total/completadas/restantes) se calculan aquí con .filter
-			    y se le pasan a Footer ya resueltas, como simples números */}
+			    así que las cuentas (total/completadas/restantes) llegan ya resueltas, como simples números */}
 			<Footer
-				tasksTotal={tasks.length}
-				tasksCompleted={tasks.filter((t) => t.completed).length}
-				tasksRemaining={tasks.filter((t) => !t.completed).length}
+				tasksTotal={estadisticas.total}
+				tasksCompleted={estadisticas.completadas}
+				tasksRemaining={estadisticas.pendientes}
 			/>
 		</div>
 	);
