@@ -107,6 +107,21 @@
 	margin: 0 auto;
 	padding: 20px;
 }
+/* Oculta un elemento visualmente pero lo mantiene accesible para lectores de pantalla.
+   Se usa en el <label> de TaskInput: el diseño no cambia, pero el campo queda etiquetado.
+   No se usa display:none ni visibility:hidden porque eso también lo ocultaría de las
+   tecnologías de asistencia, que es justo lo contrario de lo que se busca. */
+.sr-only {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border: 0;
+}
 .task-input-container {
 	max-width: 600px;
 	margin: 20px auto 0;
