@@ -41,3 +41,104 @@ jobs:
           cache-dependency-path: react-first/backend/package-lock.json
       - run: npm ci
       - run: npm run build
+
+  pruebas:
+    name: Pruebas unitarias y cobertura
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        # El ejemplo de la guía usa ./frontend; en este repo el frontend vive acá
+        working-directory: ./react-first/fs-projectManager
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          # 22 en vez del 20 del ejemplo, para no tener dos versiones de Node
+          # distintas conviviendo en el mismo pipeline
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: react-first/fs-projectManager/package-lock.json
+      - run: npm ci
+      # Falla si la cobertura no alcanza los thresholds de vitest.config.js.
+      # Eso es exactamente lo que convierte la cobertura en parte del quality gate.
+      - run: npx vitest run --coverage
+
+  e2e:
+    name: Pruebas E2E
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./react-first/fs-projectManager
+
+    # A diferencia del ejemplo de la guía, esta app es fullstack: la prueba E2E inicia
+    # sesión de verdad contra el backend Express, que a su vez necesita PostgreSQL.
+    # Sin esta base de datos el login falla y la prueba no puede ni empezar.
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: ci
+          POSTGRES_PASSWORD: ci
+          POSTGRES_DB: ci
+        ports:
+          - 5432:5432
+        # Sin el health check, los pasos podrían arrancar antes de que Postgres
+        # acepte conexiones y fallarían de forma intermitente
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgresql://ci:ci@localhost:5432/ci?schema=public
+      # El backend lanza un error al arrancar si esta variable falta (ver src/index.ts).
+      # Es un valor descartable, solo para firmar los tokens de esta corrida.
+      JWT_SECRET: secreto-solo-para-ci
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          # Este job instala las dependencias de los dos proyectos, así que la caché
+          # tiene que mirar ambos package-lock.json
+          cache-dependency-path: |
+            react-first/fs-projectManager/package-lock.json
+            react-first/backend/package-lock.json
+
+      - name: Instalar dependencias del frontend
+        run: npm ci
+
+      - name: Instalar dependencias del backend
+        run: npm ci
+        working-directory: ./react-first/backend
+
+      # El cliente de Prisma no está versionado (/src/generated/ está en .gitignore),
+      # así que hay que generarlo acá o el backend no arranca
+      - name: Generar el cliente de Prisma
+        run: npx prisma generate
+        working-directory: ./react-first/backend
+
+      # migrate deploy aplica las migraciones existentes sin crear ninguna nueva:
+      # es la variante pensada para entornos automatizados, a diferencia de migrate dev
+      - name: Crear las tablas en la base de datos
+        run: npx prisma migrate deploy
+        working-directory: ./react-first/backend
+
+      - name: Instalar el navegador de Playwright
+        run: npx playwright install --with-deps chromium
+
+      # playwright.config.ts levanta el backend y el frontend por su cuenta (webServer)
+      - name: Correr las pruebas E2E
+        run: npx playwright test
+
+      # Guarda el reporte HTML aunque las pruebas fallen: es la evidencia para revisar
+      # qué pasó, con capturas y trazas de los pasos que fallaron
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          path: react-first/fs-projectManager/playwright-report/
+          retention-days: 30
