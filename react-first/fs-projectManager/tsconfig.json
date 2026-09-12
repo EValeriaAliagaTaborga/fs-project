@@ -25,5 +25,5 @@
 		// Chequeo estricto: obliga a contemplar los null/undefined y los tipos implícitos
 		"strict": true
 	},
-	"include": ["src", "vite.config.js"]
+	"include": ["src", "vite.config.js", "playwright.config.ts", "e2e"]
 }
