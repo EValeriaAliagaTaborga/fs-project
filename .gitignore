@@ -1,0 +1,2 @@
+# Variables para Docker Compose (se crean con: cp .env.example .env)
+.env

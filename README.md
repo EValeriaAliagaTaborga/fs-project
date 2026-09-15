@@ -31,6 +31,43 @@ Cada carpeta tiene su propio README con el detalle completo:
 - **[README del backend](react-first/backend/README.md)** — variables de entorno, tabla de endpoints, modelos de Prisma y notas sobre el cliente generado.
 - **[README del frontend](react-first/fs-projectManager/README.md)** — instalación conjunta, variables `VITE_*` y comandos de la app web.
 
+## 🐳 Levantar con Docker (recomendado)
+
+La forma más rápida de correr el proyecto completo (frontend + backend + PostgreSQL): no necesitas instalar Node.js ni PostgreSQL, solo [Docker Desktop](https://www.docker.com/products/docker-desktop/) abierto y en estado *Engine running*.
+
+```bash
+git clone https://github.com/EValeriaAliagaTaborga/fs-project.git
+cd fs-project
+cp .env.example .env        # en PowerShell: Copy-Item .env.example .env
+docker compose up --build
+```
+
+La primera vez tarda unos minutos porque construye las imágenes. Estará listo cuando el log muestre `Server listening on http://localhost:3000`. Las migraciones de Prisma se aplican solas al arrancar el backend.
+
+| Servicio   | URL / puerto en tu máquina | Descripción                              |
+|------------|----------------------------|------------------------------------------|
+| Frontend   | http://localhost:5173      | App web servida por nginx                |
+| Backend    | http://localhost:3000      | API REST                                 |
+| PostgreSQL | `localhost:5433`           | Solo si quieres conectarte con pgAdmin/DBeaver |
+
+La base de datos empieza vacía: entra a http://localhost:5173 y crea una cuenta desde **Registrarse**.
+
+Comandos útiles:
+
+| Comando                     | Descripción                                                 |
+|-----------------------------|-------------------------------------------------------------|
+| `docker compose up --build` | Construye las imágenes y levanta los tres servicios         |
+| `docker compose down`       | Detiene y elimina los contenedores (los datos se conservan) |
+| `docker compose down -v`    | Igual, pero **borra también la base de datos**              |
+| `docker compose logs -f backend` | Sigue los logs del backend                             |
+
+Problemas frecuentes:
+
+- **`port is already allocated`**: algo ya usa el puerto 3000, 5173 o 5433 (por ejemplo, un `npm run dev` abierto). Ciérralo y vuelve a intentar.
+- **`required variable ... is missing a value`**: falta el archivo `.env`; créalo con `cp .env.example .env`.
+- **`Cannot connect to the Docker daemon`**: Docker Desktop no está abierto.
+
+
 ## 🚀 Instalación local
 
 Requisitos previos: Node.js 20 o superior y una instancia de PostgreSQL accesible.
