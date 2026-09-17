@@ -1,2 +1,5 @@
 # Variables para Docker Compose (se crean con: cp .env.example .env)
-.env
+# Cualquier archivo de variables (.env, .env.produccion, .env.filtrado...)
+.env*
+# ...excepto la plantilla sin secretos, que sí debe estar en el repo
+!.env.example
