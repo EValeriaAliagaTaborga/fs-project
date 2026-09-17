@@ -1,2 +1,3 @@
-// Configuración de servicios externos
-export const apiKey = 'sk_test_FALSO123456789' // TODO: mover a variable de entorno
+// Configuración de servicios externos. El valor real vive en .env (local)
+// o en GitHub Secrets (pipeline), nunca en el código.
+export const apiKey = process.env["API_KEY"]
