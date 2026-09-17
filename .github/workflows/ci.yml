@@ -143,3 +143,45 @@ jobs:
           name: playwright-report
           path: react-first/fs-projectManager/playwright-report/
           retention-days: 30
+  migraciones:
+    name: Migraciones y Seeds
+    runs-on: ubuntu-latest
+
+    # PostgreSQL desechable: existe solo mientras dura este job, en una máquina
+    # aislada de GitHub. Por eso sus credenciales pueden ir en texto plano,
+    # a diferencia de las de una base real (ver Lab 1: GitHub Secrets).
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: testuser
+          POSTGRES_PASSWORD: testpass
+          POSTGRES_DB: testdb
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+
+    defaults:
+      run:
+        # La guía usa ./backend; en este repo el backend vive acá
+        working-directory: ./react-first/backend
+
+    env:
+      # Tiene que coincidir con usuario, contraseña y base del servicio de arriba
+      DATABASE_URL: postgresql://testuser:testpass@localhost:5432/testdb
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: react-first/backend/package-lock.json
+      - run: npm ci
+      # Aplica solo las migraciones pendientes de prisma/migrations; nunca crea nuevas
+      - run: npx prisma migrate deploy
+
