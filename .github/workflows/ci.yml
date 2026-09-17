@@ -90,11 +90,12 @@ jobs:
           --health-timeout 5s
           --health-retries 5
 
+    # Los valores viven cifrados en Settings → Secrets and variables → Actions.
+    # Este archivo es público: solo nombra los secretos, nunca contiene su valor.
+    # Si alguno llegara a imprimirse en un log, GitHub lo reemplaza por ***.
     env:
-      DATABASE_URL: postgresql://ci:ci@localhost:5432/ci?schema=public
-      # El backend lanza un error al arrancar si esta variable falta (ver src/index.ts).
-      # Es un valor descartable, solo para firmar los tokens de esta corrida.
-      JWT_SECRET: secreto-solo-para-ci
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
 
     steps:
       - uses: actions/checkout@v4
@@ -142,3 +143,54 @@ jobs:
           name: playwright-report
           path: react-first/fs-projectManager/playwright-report/
           retention-days: 30
+  migraciones:
+    name: Migraciones y Seeds
+    runs-on: ubuntu-latest
+
+    # PostgreSQL desechable: existe solo mientras dura este job, en una máquina
+    # aislada de GitHub. Por eso sus credenciales pueden ir en texto plano,
+    # a diferencia de las de una base real (ver Lab 1: GitHub Secrets).
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: testuser
+          POSTGRES_PASSWORD: testpass
+          POSTGRES_DB: testdb
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+
+    defaults:
+      run:
+        # La guía usa ./backend; en este repo el backend vive acá
+        working-directory: ./react-first/backend
+
+    env:
+      # Tiene que coincidir con usuario, contraseña y base del servicio de arriba
+      DATABASE_URL: postgresql://testuser:testpass@localhost:5432/testdb
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: react-first/backend/package-lock.json
+      - run: npm ci
+      # Aplica solo las migraciones pendientes de prisma/migrations; nunca crea nuevas
+      - run: npx prisma migrate deploy
+      # seed.ts importa el cliente generado, que no está en git (/src/generated/ está en .gitignore)
+      - run: npx prisma generate
+      # Se corre dos veces a propósito: la segunda demuestra que el seed no duplica datos
+      # ni falla por el email único del usuario demo
+      - name: Seed (primera corrida)
+        run: npx prisma db seed
+      - name: Seed (segunda corrida, debe ser idempotente)
+        run: npx prisma db seed
+
+
