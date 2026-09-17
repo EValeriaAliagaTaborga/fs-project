@@ -90,11 +90,12 @@ jobs:
           --health-timeout 5s
           --health-retries 5
 
+    # Los valores viven cifrados en Settings → Secrets and variables → Actions.
+    # Este archivo es público: solo nombra los secretos, nunca contiene su valor.
+    # Si alguno llegara a imprimirse en un log, GitHub lo reemplaza por ***.
     env:
-      DATABASE_URL: postgresql://ci:ci@localhost:5432/ci?schema=public
-      # El backend lanza un error al arrancar si esta variable falta (ver src/index.ts).
-      # Es un valor descartable, solo para firmar los tokens de esta corrida.
-      JWT_SECRET: secreto-solo-para-ci
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
 
     steps:
       - uses: actions/checkout@v4
