@@ -184,4 +184,13 @@ jobs:
       - run: npm ci
       # Aplica solo las migraciones pendientes de prisma/migrations; nunca crea nuevas
       - run: npx prisma migrate deploy
+      # seed.ts importa el cliente generado, que no está en git (/src/generated/ está en .gitignore)
+      - run: npx prisma generate
+      # Se corre dos veces a propósito: la segunda demuestra que el seed no duplica datos
+      # ni falla por el email único del usuario demo
+      - name: Seed (primera corrida)
+        run: npx prisma db seed
+      - name: Seed (segunda corrida, debe ser idempotente)
+        run: npx prisma db seed
+
 
