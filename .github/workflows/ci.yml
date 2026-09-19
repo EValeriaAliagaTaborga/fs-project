@@ -5,6 +5,14 @@ on:
     branches: [master]
   pull_request:
     branches: [master]
+  # Disparador manual para el despliegue a produccion. El boton "Run workflow"
+  # solo aparece en la pestana Actions cuando este archivo ya esta fusionado en
+  # la rama por defecto (master): en un PR todavia abierto no se ve.
+  workflow_dispatch:
+    inputs:
+      confirmacion:
+        description: 'Escribe DEPLOY para confirmar el despliegue a produccion'
+        required: true
 
 jobs:
   frontend:
@@ -219,3 +227,26 @@ jobs:
         run: railway up --service fs-project --environment staging --ci
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+
+  deploy-produccion:
+    name: Deploy a Produccion (manual)
+    # La guia NO pone needs en este job: tal cual, produccion se desplegaria sin
+    # esperar ninguna prueba. Aqui si espera, porque no tiene sentido exigirle mas
+    # garantias a staging que al ambiente donde estan los datos reales.
+    needs: [frontend, backend, pruebas, e2e, migraciones]
+    # Doble cerrojo: solo corre si la ejecucion la inicio una persona a mano
+    # (workflow_dispatch) Y ademas escribio exactamente DEPLOY.
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.confirmacion == 'DEPLOY'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Instalar Railway CLI
+        run: npm install -g @railway/cli
+
+      # Token distinto al de staging: cada token de proyecto esta acotado a un
+      # ambiente, asi que el de staging no puede tocar produccion ni al reves.
+      - name: Desplegar a Railway (produccion)
+        run: railway up --service fs-project --environment production --ci
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN_PRODUCCION }}
