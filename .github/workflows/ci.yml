@@ -208,19 +208,14 @@ jobs:
       - name: Instalar Railway CLI
         run: npm install -g @railway/cli
 
-      # La guía usa un token de proyecto en RAILWAY_TOKEN. Este proyecto usa un token
-      # de cuenta, que la CLI lee de RAILWAY_API_TOKEN y que además exige enlazar el
-      # proyecto: el runner es una máquina limpia, sin el enlace que existe en local.
-      # El ID del proyecto no es una credencial, por eso puede ir en texto plano.
-      - name: Enlazar el proyecto de Railway
-        run: railway link --project 34bc2044-302f-442e-90d6-61204778aab1 --environment staging --service fs-project
-        env:
-          RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-
-      # railway up sube el repo completo como contexto; el servicio en Railway tiene
-      # Root Directory = react-first/backend y encuentra ahí su Dockerfile.
+      # railway up sube el repo completo como contexto de build; el servicio en Railway
+      # tiene Root Directory = react-first/backend y encuentra ahí su Dockerfile.
       # --ci espera a que el build termine y falla el job si el build falla.
+      #
+      # RAILWAY_TOKEN tiene que ser un token DE PROYECTO (Settings del proyecto → Tokens),
+      # acotado al ambiente staging. Un token de cuenta (el que sugiere la guía) se llama
+      # RAILWAY_API_TOKEN, exige enlazar el proyecto aparte y acá devolvía Unauthorized.
       - name: Desplegar a Railway (staging)
-        run: railway up --ci
+        run: railway up --service fs-project --environment staging --ci
         env:
-          RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
