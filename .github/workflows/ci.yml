@@ -208,11 +208,19 @@ jobs:
       - name: Instalar Railway CLI
         run: npm install -g @railway/cli
 
-      # railway up sube el directorio actual como contexto de build. Se ejecuta desde
-      # la raíz del repo (no desde react-first/backend) porque el servicio en Railway
-      # tiene configurado Root Directory = react-first/backend y espera esa estructura.
-      # --ci hace que el paso espere el build y falle si el build falla.
-      - name: Desplegar a Railway (staging)
-        run: railway up --service fs-project --environment staging --ci
+      # La guía usa un token de proyecto en RAILWAY_TOKEN. Este proyecto usa un token
+      # de cuenta, que la CLI lee de RAILWAY_API_TOKEN y que además exige enlazar el
+      # proyecto: el runner es una máquina limpia, sin el enlace que existe en local.
+      # El ID del proyecto no es una credencial, por eso puede ir en texto plano.
+      - name: Enlazar el proyecto de Railway
+        run: railway link --project 34bc2044-302f-442e-90d6-61204778aab1 --environment staging --service fs-project
         env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+
+      # railway up sube el repo completo como contexto; el servicio en Railway tiene
+      # Root Directory = react-first/backend y encuentra ahí su Dockerfile.
+      # --ci espera a que el build termine y falla el job si el build falla.
+      - name: Desplegar a Railway (staging)
+        run: railway up --ci
+        env:
+          RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
