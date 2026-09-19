@@ -327,6 +327,11 @@ app.put("/tasks/:id", verifyToken, async (req: any, res: any) => {
 	}
 });
 
+// SIMULACRO DE CAOS (Sesion 7, Lab 3): excepcion no controlada antes de app.listen.
+// El proceso muere al arrancar, el servidor nunca escucha y /health nunca responde,
+// asi que Railway marca el despliegue como no saludable. Se revierte tras el rollback.
+throw new Error("fallo simulado");
+
 // Arranca el servidor y empieza a escuchar conexiones en el puerto definido
 app.listen(PORT, () => {
 	console.log(`Server listening on http://localhost:${PORT}`);
