@@ -192,5 +192,27 @@ jobs:
         run: npx prisma db seed
       - name: Seed (segunda corrida, debe ser idempotente)
         run: npx prisma db seed
+  deploy-staging:
+    name: Deploy a Staging
+    # Si cualquiera de estos jobs falla, este ni se intenta: el quality gate
+    # de la Sesión 4 ahora también protege al despliegue.
+    needs: [frontend, backend, pruebas, e2e, migraciones]
+    # La guía usa 'refs/heads/main'; la rama por defecto de este repo es master.
+    # Con 'main' el job aparecería siempre como "skipped" sin dar ningún error.
+    # La segunda condición excluye los Pull Requests: solo se despliega lo ya fusionado.
+    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
 
+      - name: Instalar Railway CLI
+        run: npm install -g @railway/cli
 
+      # railway up sube el directorio actual como contexto de build. Se ejecuta desde
+      # la raíz del repo (no desde react-first/backend) porque el servicio en Railway
+      # tiene configurado Root Directory = react-first/backend y espera esa estructura.
+      # --ci hace que el paso espere el build y falle si el build falla.
+      - name: Desplegar a Railway (staging)
+        run: railway up --service fs-project --environment staging --ci
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
