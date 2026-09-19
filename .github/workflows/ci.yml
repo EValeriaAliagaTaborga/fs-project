@@ -104,10 +104,6 @@ jobs:
     env:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
       JWT_SECRET: ${{ secrets.JWT_SECRET }}
-      # No es un secreto: solo una URL de ejemplo para que el backend arranque
-      # durante las pruebas E2E. En Railway esta variable NO existe: ese es el
-      # desajuste de configuracion que provoca el incidente del Lab 3.
-      ANALYTICS_URL: https://analytics.example.local
 
     steps:
       - uses: actions/checkout@v4
