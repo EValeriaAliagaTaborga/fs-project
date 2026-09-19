@@ -61,6 +61,15 @@ app.get("/", (req: any, res: any) => {
 	res.send("Backend is working");
 });
 
+// Ruta de salud para el healthcheck de Railway: responde 200 solo si el proceso
+// llegó a levantar el servidor. Si el arranque falla (falta una variable, la
+// conexión a la base revienta), Railway nunca recibe este 200 y marca el
+// despliegue como no saludable.
+app.get("/health", (req: any, res: any) => {
+	res.status(200).json({ status: "ok" });
+});
+
+
 // AUTH: Register creates a real user in PostgreSQL.
 // AUTH: The password is hashed before saving it.
 app.post("/register", async (req: any, res: any) => {
