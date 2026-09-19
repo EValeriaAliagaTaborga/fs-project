@@ -36,6 +36,15 @@ if (!JWT_SECRET) {
 	throw new Error("Falta la variable de entorno JWT_SECRET. Copia .env.example a .env y complétala.");
 }
 
+// SIMULACRO DE CAOS (Sesion 7, Lab 3): variable obligatoria nueva.
+// Esta configurada en el pipeline (job e2e de ci.yml) pero NO en Railway, asi que
+// el quality gate pasa en verde y el servicio muere al arrancar en staging.
+// Se revierte despues del rollback.
+const ANALYTICS_URL = process.env["ANALYTICS_URL"];
+if (!ANALYTICS_URL) {
+	throw new Error("Falta la variable de entorno ANALYTICS_URL.");
+}
+
 // Define la forma que debe tener cada tarea en TypeScript.
 // TypeScript usa este tipo en tiempo de compilación para detectar errores; no existe en runtime.
 type Task = {
