@@ -69,6 +69,17 @@ app.get("/health", (req: any, res: any) => {
 	res.status(200).json({ status: "ok" });
 });
 
+// Versión de la API. Se sube a mano al liberar un cambio relevante; es lo que
+// permite saber si la instancia desplegada ya tiene el último código o no.
+const APP_VERSION = "1.1.0";
+
+// Ruta de diagnóstico: dice qué versión del código está sirviendo esta instancia.
+// A diferencia de /health (que solo responde "estoy vivo"), esta permite confirmar
+// desde afuera QUÉ está vivo — útil justo después de un despliegue o de un rollback.
+app.get("/version", (req: any, res: any) => {
+	res.status(200).json({ version: APP_VERSION });
+});
+
 
 // AUTH: Register creates a real user in PostgreSQL.
 // AUTH: The password is hashed before saving it.
